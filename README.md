@@ -139,3 +139,160 @@ mvn clean compile
 
 ## Conclusion
 Ce projet démontre l'évolution d'une application depuis un couplage fort vers une architecture découplée utilisant l'injection de dépendances. L'utilisation de Spring Framework simplifie grandement la gestion des dépendances et améliore la maintenabilité du code.
+
+---
+
+# Mini Framework IoC (Partie 2)
+
+## Introduction
+Ce mini framework d'injection de dépendances reproduit les fonctionnalités essentielles de Spring IoC, permettant l'injection de dépendances via XML et annotations.
+
+## Architecture du Framework
+
+### Structure des Packages
+```
+src/main/java/net/omar/framework/ioc/
+├── annotations/
+│   ├── Component.java      # Marque une classe comme composant géré
+│   ├── Autowired.java      # Injection automatique de dépendances
+│   └── Qualifier.java      # Spécifie quel bean injecter
+├── core/
+│   ├── ApplicationContext.java              # Interface principale
+│   ├── AbstractApplicationContext.java      # Implémentation de base
+│   ├── AnnotationConfigApplicationContext.java  # Contexte pour annotations
+│   ├── XmlApplicationContext.java          # Contexte pour XML
+│   └── BeanDefinition.java                 # Métadonnées des beans
+├── xml/
+│   ├── Beans.java          # Racine XML (JAXB)
+│   ├── Bean.java           # Définition d'un bean
+│   ├── Property.java       # Propriété d'un bean
+│   └── ConstructorArg.java # Argument de constructeur
+├── exceptions/
+│   ├── BeanCreationException.java
+│   ├── NoSuchBeanException.java
+│   └── CircularDependencyException.java
+└── utils/
+    └── ClassScanner.java   # Scan des packages
+```
+
+## Fonctionnalités Implémentées
+
+### 1. Injection par Annotations
+
+#### @Component
+```java
+@Component("userDao")
+public class UserDaoImpl implements UserDao {
+    // ...
+}
+```
+
+#### @Autowired
+- **Field Injection**
+```java
+@Autowired
+private UserDao userDao;
+```
+
+- **Constructor Injection**
+```java
+@Autowired
+public UserServiceImpl(UserDao userDao) {
+    this.userDao = userDao;
+}
+```
+
+- **Setter Injection**
+```java
+@Autowired
+public void setUserDao(UserDao userDao) {
+    this.userDao = userDao;
+}
+```
+
+#### @Qualifier
+```java
+@Autowired
+@Qualifier("userDao")
+private UserDao userDao;
+```
+
+### 2. Injection par XML
+
+#### Configuration XML
+```xml
+<beans>
+    <!-- Injection par setter -->
+    <bean id="userService" class="com.example.UserServiceImpl">
+        <property name="userDao" ref="userDao"/>
+    </bean>
+    
+    <!-- Injection par constructeur -->
+    <bean id="userService2" class="com.example.UserServiceImpl">
+        <constructor-arg index="0" ref="userDao"/>
+    </bean>
+    
+    <!-- Propriétés simples -->
+    <bean id="dataSource" class="com.example.DataSource">
+        <property name="url" value="jdbc:mysql://localhost:3306/db"/>
+        <property name="maxConnections" value="10"/>
+    </bean>
+</beans>
+```
+
+### 3. Utilisation du Framework
+
+#### Avec Annotations
+```java
+ApplicationContext context = new AnnotationConfigApplicationContext("com.example");
+UserService service = context.getBean(UserService.class);
+```
+
+#### Avec XML
+```java
+ApplicationContext context = new XmlApplicationContext("classpath:beans.xml");
+UserService service = (UserService) context.getBean("userService");
+```
+
+## Caractéristiques Techniques
+
+### Gestion des Beans
+- **Singleton par défaut** : Une seule instance par bean
+- **Détection de dépendances circulaires**
+- **Résolution automatique par type ou par nom**
+
+### Types d'Injection Supportés
+1. **Field Injection** : Accès direct aux champs privés via réflexion
+2. **Setter Injection** : Via méthodes setter
+3. **Constructor Injection** : Via constructeur annoté
+
+### Conversion de Types
+- Conversion automatique pour types primitifs
+- Support des références entre beans
+- Injection de valeurs depuis XML
+
+## Différences avec Spring IoC
+
+| Fonctionnalité | Notre Framework | Spring IoC |
+|----------------|-----------------|------------|
+| Annotations de base | ✅ | ✅ |
+| Configuration XML | ✅ (JAXB) | ✅ |
+| Injection Field/Setter/Constructor | ✅ | ✅ |
+| Scopes | ❌ (singleton only) | ✅ |
+| AOP | ❌ | ✅ |
+| Événements | ❌ | ✅ |
+| Profiles | ❌ | ✅ |
+
+## Exemples d'Utilisation
+
+Le framework inclut des exemples complets dans le package `net.omar.examples` :
+- `AnnotationExample.java` : Démo avec annotations
+- `XmlExample.java` : Démo avec configuration XML
+- Implémentations DAO et Service pour les tests
+
+## Points Clés d'Apprentissage
+
+1. **Réflexion Java** : Utilisation intensive pour l'instantiation et l'injection
+2. **JAXB** : Mapping objet-XML pour la configuration
+3. **Design Patterns** : Factory, Singleton, Dependency Injection
+4. **Architecture modulaire** : Séparation claire des responsabilités

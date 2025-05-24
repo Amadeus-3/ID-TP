@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+    <!-- Bean avec injection par setter -->
+    <bean id="userDaoXml" class="net.omar.examples.dao.UserDaoImpl"/>
+    
+    <bean id="userServiceSetter" class="net.omar.examples.service.UserServiceImpl">
+        <property name="userDao" ref="userDaoXml"/>
+    </bean>
+    
+    <!-- Bean avec injection par constructeur -->
+    <bean id="userServiceConstructor" class="net.omar.examples.service.UserServiceImpl">
+        <constructor-arg index="0" ref="userDaoXml"/>
+    </bean>
+    
+    <!-- Bean avec valeurs simples -->
+    <bean id="dataSource" class="net.omar.examples.dao.MockDataSource">
+        <property name="url" value="jdbc:mysql://localhost:3306/test"/>
+        <property name="username" value="root"/>
+        <property name="maxConnections" value="10"/>
+    </bean>
+</beans>
