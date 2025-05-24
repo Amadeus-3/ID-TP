@@ -1,0 +1,2 @@
+net.omar.dao.DaoImpl
+net.omar.metier.MetierImpl
